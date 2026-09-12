@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeMap — زندگیت رو مثل یه بازی ببر جلو</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #05080d;
+            --bg-2: #0a0f1a;
+            --bg-card: #0f1521;
+            --accent: #00d9ff;
+            --accent-2: #7c3aed;
+            --accent-3: #10b981;
+            --accent-4: #fbbf24;
+            --danger: #ef4444;
+            --text: #e6edf3;
+            --text-dim: #8b949e;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .bg-anim {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-anim::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -30%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.12) 0%, transparent 60%);
+            animation: float 25s infinite ease-in-out;
+        }
+
+        .bg-anim::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -30%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 60%);
+            animation: float 30s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(60px, 60px); }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+        }
+
+        .particle {
+            position: fixed;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+            animation: particleFloat 15s infinite ease-in-out;
+        }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+            50% { transform: translateY(-120px) rotate(180deg); opacity: 0.3; }
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 18px 40px;
+            background: rgba(5, 8, 13, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        header.scrolled {
+            padding: 12px 40px;
+            background: rgba(5, 8, 13, 0.92);
+        }
+
+        .header-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-icon {
+            font-size: 26px;
+            filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.6));
+            animation: logoPulse 3s infinite ease-in-out;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+        }
+
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+            background: rgba(0, 217, 255, 0.08);
+        }
+
+        .header-cta {
+            padding: 10px 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.25);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.45);
+        }
+
+        .hero {
+            padding: 160px 40px 100px;
+            max-width: 1300px;
+            margin: 0 auto;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: rgba(0, 217, 255, 0.08);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 30px;
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.3); }
+            50% { box-shadow: 0 0 0 12px rgba(0, 217, 255, 0); }
+        }
+
+        .hero h1 {
+            font-size: 68px;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 25px;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #ffffff 0%, #00d9ff 50%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h1 .highlight {
+            display: inline-block;
+            position: relative;
+        }
+
+        .hero h1 .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.3), rgba(124, 58, 237, 0.3));
+            z-index: -1;
+            border-radius: 6px;
+        }
+
+        .hero p {
+            font-size: 19px;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.9;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 34px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 217, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .hero-visual {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            perspective: 1000px;
+        }
+
+        .visual-frame {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.9), rgba(10, 15, 26, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 217, 255, 0.1);
+            transform: rotateX(8deg);
+            transition: transform 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .visual-frame:hover {
+            transform: rotateX(0deg);
+        }
+
+        .lifemap-demo {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            position: relative;
+        }
+
+        .map-category {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-category:hover {
+            transform: translateY(-5px);
+            border-color: var(--cat-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .map-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--cat-color);
+            opacity: 0.6;
+        }
+
+        .cat-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .cat-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .cat-progress {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .cat-progress-fill {
+            height: 100%;
+            background: var(--cat-color);
+            border-radius: 3px;
+            transition: width 1.5s ease;
+            box-shadow: 0 0 10px var(--cat-color);
+        }
+
+        .cat-percent {
+            font-size: 12px;
+            color: var(--cat-color);
+            font-weight: 800;
+            text-align: left;
+        }
+
+        html[dir="rtl"] .cat-percent {
+            text-align: right;
+        }
+
+        section {
+            padding: 100px 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        .section-badge {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            padding: 6px 16px;
+            background: rgba(0, 217, 255, 0.08);
+            border: 1px solid rgba(0, 217, 255, 0.25);
+            border-radius: 20px;
+        }
+
+        .section-title {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff, #00d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-dim);
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.7), rgba(10, 15, 26, 0.9));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 35px 30px;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 217, 255, 0.4);
+            box-shadow: 0 25px 60px rgba(0, 217, 255, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(124, 58, 237, 0.15));
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: var(--text-dim);
+            line-height: 1.9;
+        }
+
+        .quest-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .quest-visual {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.9), rgba(10, 15, 26, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .quest-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .quest-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quest-level {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 15px;
+            color: white;
+        }
+
+        .quest-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quest-task {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .quest-task.done {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .quest-task.done .task-text {
+            color: var(--accent-3);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .task-check {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .quest-task.done .task-check {
+            background: var(--accent-3);
+            border-color: var(--accent-3);
+            color: white;
+        }
+
+        .task-text {
+            flex: 1;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .task-xp {
+            font-size: 12px;
+            color: var(--accent-4);
+            font-weight: 800;
+        }
+
+        .quest-reward {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(0, 217, 255, 0.1));
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 14px;
+            animation: rewardPulse 2s infinite;
+        }
+
+        @keyframes rewardPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
+            50% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
+        }
+
+        .reward-title {
+            font-size: 16px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-4), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .reward-xp {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--accent-4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.8), rgba(10, 15, 26, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            animation: rotate 6s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 217, 255, 0.4);
+        }
+
+        .stat-value {
+            font-size: 46px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .challenge-visual {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.9), rgba(10, 15, 26, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--danger), var(--accent-4), var(--accent-3));
+        }
+
+        .challenge-title {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .challenge-sub {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 25px;
+        }
+
+        .leaderboard {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .leader-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 80px;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .leader-row:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(-4px);
+        }
+
+        .leader-row.gold {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(251, 191, 36, 0.02));
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .leader-row.silver {
+            background: linear-gradient(90deg, rgba(203, 213, 225, 0.12), rgba(203, 213, 225, 0.02));
+            border-color: rgba(203, 213, 225, 0.3);
+        }
+
+        .leader-row.bronze {
+            background: linear-gradient(90deg, rgba(217, 119, 6, 0.12), rgba(217, 119, 6, 0.02));
+            border-color: rgba(217, 119, 6, 0.3);
+        }
+
+        .leader-rank {
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        .leader-name {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .leader-days {
+            text-align: left;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        html[dir="rtl"] .leader-days {
+            text-align: right;
+        }
+
+        .streak-warning {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(251, 191, 36, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 16px;
+            padding: 25px 30px;
+            text-align: center;
+            animation: dangerPulse 2s infinite;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        @keyframes dangerPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        }
+
+        .streak-warning-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--danger);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .streak-warning-text {
+            font-size: 15px;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .recovery-btn {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--danger), #f97316);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
+        }
+
+        .recovery-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(239, 68, 68, 0.55);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .badge-card {
+            background: linear-gradient(135deg, rgba(15, 21, 33, 0.8), rgba(10, 15, 26, 0.95));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .badge-card:hover {
+            transform: translateY(-6px) scale(1.05);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.2);
+        }
+
+        .badge-emoji {
+            font-size: 42px;
+            margin-bottom: 12px;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .badge-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .badge-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(124, 58, 237, 0.08));
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 25px;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15) 0%, transparent 50%);
+            animation: float 20s infinite;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-title {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-sub {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 38px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .cta-btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.35);
+        }
+
+        .cta-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 217, 255, 0.55);
+        }
+
+        .cta-btn.secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .cta-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        footer {
+            padding: 50px 40px 40px;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .footer-text {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .social-btn {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            background: rgba(0, 217, 255, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .footer-credit {
+            font-size: 12px;
+            color: #4b5563;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-credit a {
+            color: var(--accent);
+            text-decoration: none;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        .footer-credit a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 46px; }
+            .section-title { font-size: 36px; }
+            .cta-title { font-size: 32px; }
+            .quest-demo { grid-template-columns: 1fr; }
+            .lifemap-demo { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 14px 20px; }
+            header.scrolled { padding: 10px 20px; }
+            nav { display: none; }
+            .hero { padding: 120px 20px 60px; }
+            .hero h1 { font-size: 32px; letter-spacing: -1px; }
+            .hero p { font-size: 15px; }
+            section { padding: 60px 20px; }
+            .section-title { font-size: 28px; }
+            .section-badge { font-size: 11px; }
+            .lifemap-demo { grid-template-columns: 1fr; }
+            .visual-frame { padding: 20px; }
+            .cta-section { padding: 50px 20px; }
+            .cta-title { font-size: 24px; }
+            .cta-sub { font-size: 15px; }
+            .header-cta { padding: 8px 16px; font-size: 12px; }
+            .logo { font-size: 18px; }
+            .logo-icon { font-size: 22px; }
+            .feature-card { padding: 25px 22px; }
+            .badge-emoji { font-size: 34px; }
+            .stat-value { font-size: 36px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-anim"></div>
+    <div class="grid-overlay"></div>
+
+    <header id="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🗺️</span>
+                <span>LifeMap</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#features">ویژگی‌ها</a></li>
+                    <li><a href="#quests">Quest</a></li>
+                    <li><a href="#challenge">Challenge</a></li>
+                    <li><a href="#badges">دستاوردها</a></li>
+                </ul>
+            </nav>
+            <a href="#cta" class="header-cta">شروع کن 🚀</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-badge reveal">
+            <span>✨</span>
+            <span>زندگیت رو تبدیل به یه بازی کن</span>
+        </div>
+
+        <h1 class="reveal">
+            زندگیت رو مثل یه<br>
+            <span class="highlight">بازی واقعی</span> ببر جلو
+        </h1>
+
+        <p class="reveal">
+            LifeMap نقشه‌ی تعاملی زندگیته. اهدافت رو به Quest تبدیل کن، XP بگیر، سطحت رو ببر بالا، و با دوستات رقابت کن. بدون AI، بدون پیچیدگی — فقط پیشرفت واقعی.
+        </p>
+
+        <div class="hero-cta reveal">
+            <a href="#cta" class="btn btn-primary">
+                <span>🎯</span>
+                <span>شروع کن</span>
+            </a>
+            <a href="#features" class="btn btn-secondary">
+                <span>👀</span>
+                <span>بیشتر بدون</span>
+            </a>
+        </div>
+
+        <div class="hero-visual reveal">
+            <div class="visual-frame">
+                <div class="lifemap-demo">
+                    <div class="map-category" style="--cat-color: #00d9ff;">
+                        <span class="cat-icon">📚</span>
+                        <div class="cat-name">یادگیری</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 72%; background: #00d9ff;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #00d9ff;">72%</div>
+                    </div>
+
+                    <div class="map-category" style="--cat-color: #10b981;">
+                        <span class="cat-icon">💪</span>
+                        <div class="cat-name">سلامتی</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 41%; background: #10b981;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #10b981;">41%</div>
+                    </div>
+
+                    <div class="map-category" style="--cat-color: #fbbf24;">
+                        <span class="cat-icon">💰</span>
+                        <div class="cat-name">مالی</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 63%; background: #fbbf24;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #fbbf24;">63%</div>
+                    </div>
+
+                    <div class="map-category" style="--cat-color: #c084fc;">
+                        <span class="cat-icon">👥</span>
+                        <div class="cat-name">روابط</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 55%; background: #c084fc;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #c084fc;">55%</div>
+                    </div>
+
+                    <div class="map-category" style="--cat-color: #f87171;">
+                        <span class="cat-icon">🎮</span>
+                        <div class="cat-name">سرگرمی</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 88%; background: #f87171;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #f87171;">88%</div>
+                    </div>
+
+                    <div class="map-category" style="--cat-color: #7c3aed;">
+                        <span class="cat-icon">🎯</span>
+                        <div class="cat-name">اهداف</div>
+                        <div class="cat-progress">
+                            <div class="cat-progress-fill" style="width: 47%; background: #7c3aed;"></div>
+                        </div>
+                        <div class="cat-percent" style="color: #7c3aed;">47%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="section-header reveal">
+            <div class="section-badge">✨ ویژگی‌ها</div>
+            <h2 class="section-title">چرا LifeMap؟</h2>
+            <p class="section-subtitle">
+                چون فقط یه دفترچه کار نیست. یه سیستم کامله که زندگیت رو به بازی تبدیل می‌کنه.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">🗺️</div>
+                <div class="feature-title">نقشه تعاملی</div>
+                <div class="feature-desc">
+                    زندگیت رو به شکل یه نقشه بصری ببین. هر دسته (یادگیری، سلامتی، مالی، روابط) یه مسیر داره و با پیشرفت، باز می‌شه.
+                </div>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">⚔️</div>
+                <div class="feature-title">Quest به جای Task</div>
+                <div class="feature-desc">
+                    کارهای روزمره تبدیل به Quest می‌شن. هر Quest تموم شه، XP می‌گیری و سطحت بالا می‌ره.
+                </div>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">🔥</div>
+                <div class="feature-title">Life Streak</div>
+                <div class="feature-desc">
+                    هر روز که فعالیت کنی، Streak‌ت بیشتر می‌شه. اگه یه روز از دست بدی، می‌تونی با Recovery Quest نجاتش بدی.
+                </div>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">👥</div>
+                <div class="feature-title">Challenge گروهی</div>
+                <div class="feature-desc">
+                    با دوستات یا کل کاربرا Challenge بساز. Leaderboard زنده ببین و برای رتبه اول بجنگ.
+                </div>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">🏆</div>
+                <div class="feature-title">Achievement و Badge</div>
+                <div class="feature-desc">
+                    برای هر دستاورد، بج می‌گیری. پروفایلت تبدیل به یه رزومه قابل بازی می‌شه که می‌تونی به بقیه نشون بدی.
+                </div>
+            </div>
+
+            <div class="feature-card reveal">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">تحلیل پیشرفت</div>
+                <div class="feature-desc">
+                    نمودارهای زیبا از پیشرفتت. ببین توی کدوم دسته قوی‌تری، کجا ضعیف‌تری و باید بیشتر وقت بذاری.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="quests">
+        <div class="section-header reveal">
+            <div class="section-badge">⚔️ Quest</div>
+            <h2 class="section-title">کارها = ماجراجویی</h2>
+            <p class="section-subtitle">
+                هر کار یه Quest. هر Quest یه پاداش.
+            </p>
+        </div>
+
+        <div class="quest-demo">
+            <div class="reveal">
+                <h3 style="font-size: 26px; font-weight: 900; margin-bottom: 20px;">
+                    🎯 Quest: یادگیری Python
+                </h3>
+                <p style="color: var(--text-dim); margin-bottom: 25px; line-height: 1.9;">
+                    هر Quest چند تا Task داره. با تکمیل هر Task، XP می‌گیری. وقتی همه تموم شد، Quest کامل می‌شه و مسیر مرحله بعد باز می‌شه.
+                </p>
+                <p style="color: var(--text-dim); margin-bottom: 25px; line-height: 1.9;">
+                    اینطوری هر کار کوچیک، یه قدم واقعی به سمت هدفت می‌شه — نه فقط یه تیک توی دفترچه.
+                </p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="padding: 12px 20px; background: rgba(0, 217, 255, 0.08); border: 1px solid rgba(0, 217, 255, 0.3); border-radius: 12px; font-size: 13px; font-weight: 700; color: var(--accent);">
+                        💡 +50 XP
+                    </div>
+                    <div style="padding: 12px 20px; background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.3); border-radius: 12px; font-size: 13px; font-weight: 700; color: #c084fc;">
+                        🏆 Achievement
+                    </div>
+                    <div style="padding: 12px 20px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; font-size: 13px; font-weight: 700; color: var(--accent-3);">
+                        🔓 Unlock Next
+                    </div>
+                </div>
+            </div>
+
+            <div class="quest-visual reveal">
+                <div class="quest-header">
+                    <div class="quest-title">
+                        <span>🐍</span>
+                        <span>یادگیری Python</span>
+                    </div>
+                    <div class="quest-level">Level 1</div>
+                </div>
+
+                <div class="quest-tasks">
+                    <div class="quest-task done">
+                        <div class="task-check">✓</div>
+                        <div class="task-text">۳۰ دقیقه مطالعه</div>
+                        <div class="task-xp">+20 XP</div>
+                    </div>
+                    <div class="quest-task done">
+                        <div class="task-check">✓</div>
+                        <div class="task-text">۵ تمرین حل کن</div>
+                        <div class="task-xp">+30 XP</div>
+                    </div>
+                    <div class="quest-task">
+                        <div class="task-check"></div>
+                        <div class="task-text">یک برنامه ساده بنویس</div>
+                        <div class="task-xp">+50 XP</div>
+                    </div>
+                </div>
+
+                <div class="quest-reward">
+                    <div class="reward-title">🏆 Quest Reward</div>
+                    <div class="reward-xp">+100 XP</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="stats-grid">
+            <div class="stat-card reveal">
+                <div class="stat-value" data-count="6">0</div>
+                <div class="stat-label">دسته‌بندی زندگی</div>
+            </div>
+            <div class="stat-card reveal">
+                <div class="stat-value" data-count="100" data-suffix="+">0</div>
+                <div class="stat-label">Achievement</div>
+            </div>
+            <div class="stat-card reveal">
+                <div class="stat-value" data-count="365">0</div>
+                <div class="stat-label">روز Streak ممکن</div>
+            </div>
+            <div class="stat-card reveal">
+                <div class="stat-value">∞</div>
+                <div class="stat-label">Quest بی‌نهایت</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="challenge">
+        <div class="section-header reveal">
+            <div class="section-badge">🔥 Challenge</div>
+            <h2 class="section-title">با کل دنیا رقابت کن</h2>
+            <p class="section-subtitle">
+                Challenge بساز، وارد Challenge دیگران شو، و توی Leaderboard بدرخش.
+            </p>
+        </div>
+
+        <div class="challenge-visual reveal">
+            <div class="challenge-title">
+                <span>🔥</span>
+                <span>30 DAYS — NO ZERO DAYS</span>
+            </div>
+            <div class="challenge-sub">1,247 نفر شرکت کردن · 8 روز مونده</div>
+
+            <div class="leaderboard">
+                <div class="leader-row gold">
+                    <div class="leader-rank">🥇</div>
+                    <div class="leader-name">Alex</div>
+                    <div class="leader-days">30 روز</div>
+                </div>
+                <div class="leader-row silver">
+                    <div class="leader-rank">🥈</div>
+                    <div class="leader-name">Amir</div>
+                    <div class="leader-days">29 روز</div>
+                </div>
+                <div class="leader-row bronze">
+                    <div class="leader-rank">🥉</div>
+                    <div class="leader-name">Sara</div>
+                    <div class="leader-days">28 روز</div>
+                </div>
+                <div class="leader-row">
+                    <div class="leader-rank" style="color: var(--text-dim);">4</div>
+                    <div class="leader-name">Reza</div>
+                    <div class="leader-days">26 روز</div>
+                </div>
+                <div class="leader-row">
+                    <div class="leader-rank" style="color: var(--text-dim);">5</div>
+                    <div class="leader-name">Nina</div>
+                    <div class="leader-days">25 روز</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-header reveal">
+            <div class="section-badge">💀 Life Streak</div>
+            <h2 class="section-title">نذار زنجیرت بشکنه</h2>
+            <p class="section-subtitle">
+                سیستم Streak باعث می‌شه هر روز برگردی. اگه یه روز عقب بیفتی، Recovery Quest نجاتت می‌ده.
+            </p>
+        </div>
+
+        <div class="streak-warning reveal">
+            <div class="streak-warning-title">
+                <span>⚠️</span>
+                <span>Streak شما در خطره!</span>
+            </div>
+            <div class="streak-warning-text">
+                اگه امروز فعالیت نکنی، 43 روز Streak از دست می‌ره.
+            </div>
+            <button class="recovery-btn">
+                🔥 Recovery Quest رو شروع کن
+            </button>
+        </div>
+    </section>
+
+    <section id="badges">
+        <div class="section-header reveal">
+            <div class="section-badge">🏆 دستاوردها</div>
+            <h2 class="section-title">پروفایلت رو بساز</h2>
+            <p class="section-subtitle">
+                هر دستاورد یه Badge. مجموعشون یه رزومه قابل بازیه که می‌تونی به همه نشون بدی.
+            </p>
+        </div>
+
+        <div class="badges-grid">
+            <div class="badge-card reveal">
+                <span class="badge-emoji">🏃</span>
+                <div class="badge-name">30 Days Active</div>
+                <div class="badge-desc">۳۰ روز فعال</div>
+            </div>
+            <div class="badge-card reveal">
+                <span class="badge-emoji">📚</span>
+                <div class="badge-name">100 Hours Learning</div>
+                <div class="badge-desc">۱۰۰ ساعت یادگیری</div>
+            </div>
+            <div class="badge-card reveal">
+                <span class="badge-emoji">🔥</span>
+                <div class="badge-name">365 Day Streak</div>
+                <div class="badge-desc">یک سال پیوسته</div>
+            </div>
+            <div class="badge-card reveal">
+                <span class="badge-emoji">💰</span>
+                <div class="badge-name">First Financial Goal</div>
+                <div class="badge-desc">اولین هدف مالی</div>
+            </div>
+            <div class="badge-card reveal">
+                <span class="badge-emoji">🚀</span>
+                <div class="badge-name">First Project</div>
+                <div class="badge-desc">اولین پروژه</div>
+            </div>
+            <div class="badge-card reveal">
+                <span class="badge-emoji">👑</span>
+                <div class="badge-name">Level 100</div>
+                <div class="badge-desc">سطح ۱۰۰</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cta">
+        <div class="cta-section reveal">
+            <div class="cta-content">
+                <h2 class="cta-title">آماده‌ای زندگیت رو بازی کنی؟</h2>
+                <p class="cta-sub">
+                    LifeMap به زودی آماده می‌شه. تا اون موقع، می‌تونی با من در تماس باشی و از پروژه‌های دیگه‌م باخبر شی.
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://amirhosseinsefrvayek-glitch.github.io/Myresume/" target="_blank" class="cta-btn primary">
+                        <span>👤</span>
+                        <span>مشاهده رزومه من</span>
+                    </a>
+                    <a href="#features" class="cta-btn secondary">
+                        <span>📖</span>
+                        <span>بیشتر درباره LifeMap</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">🗺️ LifeMap</div>
+            <p class="footer-text">زندگیت رو مثل یه بازی واقعی ببر جلو</p>
+
+            <div class="footer-social">
+                <a href="#" class="social-btn" title="GitHub">💻</a>
+                <a href="#" class="social-btn" title="Twitter">🐦</a>
+                <a href="#" class="social-btn" title="Instagram">📷</a>
+                <a href="#" class="social-btn" title="Telegram">✈️</a>
+            </div>
+
+            <p class="footer-credit">
+                Create by <a href="https://amirhosseinsefrvayek-glitch.github.io/Myresume/" target="_blank">Amirhossein Hosseinzadeh</a> © 2025
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('active');
+                    }, index * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    const target = parseInt(el.getAttribute('data-count'));
+                    const suffix = el.getAttribute('data-suffix') || '';
+                    let current = 0;
+                    const duration = 1500;
+                    const step = target / (duration / 16);
+
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        el.textContent = Math.floor(current) + suffix;
+                    }, 16);
+
+                    counterObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+        const particles = ['🗺️', '🎯', '⚔️', '🏆', '🔥', '💎', '⭐', '✨', '🚀', '💪', '📚', '💰'];
+
+        function createParticle() {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = particles[Math.floor(Math.random() * particles.length)];
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.fontSize = (Math.random() * 20 + 16) + 'px';
+            p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 20000);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            setTimeout(createParticle, i * 400);
+        }
+        setInterval(createParticle, 3500);
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerHeight = 80;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                }
+            });
+        });
+
+        const heroVisual = document.querySelector('.hero-visual');
+        if (heroVisual) {
+            window.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 10;
+                const y = (e.clientY / window.innerHeight - 0.5) * 10;
+                heroVisual.style.transform = `perspective(1000px) rotateY(${x}deg) rotateX(${-y}deg)`;
+            });
+        }
+    </script>
+
+</body>
+</html>
